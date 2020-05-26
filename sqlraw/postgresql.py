@@ -14,6 +14,11 @@ from sqlraw.psql_support import (DSN, PGSQL_MIGRATION_UP, PGSQL_MIGRATION_DOWN, 
 
 
 def psql(function):
+    """
+    Decorates some methods to ensure that the connections are properly closed or rolled back in case of an error.
+    :param function: the method if decorates
+    :return: method
+    """
     def wrapper(*args, **kwargs):
         connection = None
         try:
@@ -32,6 +37,12 @@ def psql(function):
 class PostgresScheme(object):
     @staticmethod
     def close(conn, cursor):
+        """
+        Commit an open connection, close the cursor and then close the connection
+        :param conn: connection
+        :param cursor: cursor
+        :return: None
+        """
         conn.commit()
         cursor.close()
         conn.close()
@@ -39,6 +50,12 @@ class PostgresScheme(object):
     @classmethod
     @psql
     def commit(cls, sql, **kwargs):
+        """
+        A high level abstraction that commits queries to the DB
+        :param sql: query that will be run against a DB
+        :param kwargs: dictionary
+        :return: None
+        """
         conn = kwargs['conn']
         cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
@@ -48,6 +65,12 @@ class PostgresScheme(object):
     @classmethod
     @psql
     def fetch_one(cls, sql, **kwargs):
+        """
+        Get one result based on the `sql` and `kwargs.get('args')`
+        :param sql: query that will be run against a DB
+        :param kwargs: dictionary
+        :return: a dictionary of result if found, else None
+        """
         conn = kwargs['conn']
         cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
@@ -60,6 +83,12 @@ class PostgresScheme(object):
     @classmethod
     @psql
     def fetch_all(cls, sql, **kwargs):
+        """
+        Get more than one result based on the `sql` and `kwargs.get('args')`
+        :param sql: query that will be run against a DB
+        :param kwargs: a dictionary
+        :return: a dictionary of results if found, else None
+        """
         conn = kwargs['conn']
         cursor = conn.cursor(cursor_factory=NamedTupleCursor)
 
@@ -100,6 +129,11 @@ def db_initialise():
 
 
 def db_migrate():
+    """
+    Generate a new .sql file that you can alter to taste.
+    The epoch time of generation is used in naming the generated file
+    :return: None
+    """
     when = str(int(time.time()))
     sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
@@ -112,6 +146,10 @@ def db_migrate():
 
 
 def db_upgrade():
+    """
+    Runs an upgrade on a DB using the generated `MIGRATION_FILE`
+    :return: None
+    """
     generate_migration_file()
     dbu_query = anosql.from_path(MIGRATION_FILE, 'psycopg2')
 
@@ -126,21 +164,17 @@ def db_upgrade():
 
 def db_downgrade(step):
     """
-    Downgrade the migration table in steps.
-
-    # shows the migration files
-    python manage.py -f
-
-    # downgrade the migration table 2 times
-    python manage.py -d 2
-    :param step:
+    Downgrades a DB to a previous version as specified with the `step`
+    :param step: number of downgrades to do
     :return: None
     """
-    generate_migration_file()
-
-    dbd_query = anosql.from_path(MIGRATION_FILE, 'psycopg2')
     to_use = [_.strip('.sql') for _ in migration_files()]
+
+    # since it's a downgrade, a reverse of the migration is essential
     to_use.reverse()
+
+    generate_migration_file()
+    dbd_query = anosql.from_path(MIGRATION_FILE, 'psycopg2')
 
     try:
         count = 0
@@ -156,13 +190,18 @@ def db_downgrade(step):
 
 
 def status():
-    generate_migration_file()
+    """
+    Shows the already run migrations
+    :return: String
+    """
+    response = []
     to_use = [_.strip('.sql') for _ in migration_files()]
     logger.info(f"migration files: {to_use}")
 
     for step in to_use:
         try:
             if PostgresScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': step}}).exists:
-                print(f"migrations done: {step}")
+                response.append(f"migrations done: {step}")
         except psycopg2.errors.UndefinedTable:
-            print("no more downgrade left")
+            response.append('no present migrations')
+    return "\n".join(response)

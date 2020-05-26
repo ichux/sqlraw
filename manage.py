@@ -7,6 +7,10 @@ from sqlraw.psql_support import DB_URL
 
 
 def parse() -> argparse.ArgumentParser:
+    """
+    Parse the terminal argument(s)
+    :return: ArgumentParser
+    """
     _ = argparse.ArgumentParser(description='Manage your DB migrations', allow_abbrev=False)
 
     _.add_argument("-v", "--version", action="version", version="sqlraw version 1.0.0")
@@ -28,6 +32,10 @@ def parse() -> argparse.ArgumentParser:
 
 
 def main():
+    """
+    The decision box of this application
+    :return: None
+    """
     parser = parse()
     arguments = parser.parse_args()
     module = sqlraw.postgresql if DB_URL.scheme == 'postgres' else sqlraw.mysql
@@ -48,7 +56,7 @@ def main():
         print(by_index(arguments.by_index))
 
     if arguments.status:
-        getattr(module, 'status')()
+        print(getattr(module, 'status')())
 
     if arguments.files:
         print(migration_files())
@@ -57,7 +65,7 @@ def main():
         print(files_by_number())
 
     if arguments.regex:
-        regex(arguments.regex)
+        print(regex(arguments.regex))
 
     if arguments.collection:
         for _ in arguments.collection:

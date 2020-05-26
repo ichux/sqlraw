@@ -54,15 +54,27 @@ except TypeError:
 
 
 def migration_files():
+    """
+    Gets all the migration files that are found inside the `MIGRATION_FOLDER`
+    :return: list
+    """
     path, dirs, files = next(os.walk(MIGRATION_FOLDER))
     return sorted([file_ for file_ in files if file_.endswith('.sql')])
 
 
 def files_by_number():
+    """
+    Get files by the number at which they are created
+    :return: list
+    """
     return [(_, num + 1) for num, _ in enumerate(migration_files())]
 
 
 def generate_migration_file():
+    """
+    Generates the sql within the `MIGRATION_FILE` that is used by `anosql`
+    :return: None
+    """
     with open(MIGRATION_FILE, 'w') as sql_queries:
         all_queries = ''
         for each in migration_files():
@@ -73,23 +85,39 @@ def generate_migration_file():
 
 
 def display_sql(revision):
-    to_use = [_ for _ in migration_files() if revision == _.strip('.sql')]
-    if to_use:
-        return open(os.path.join(MIGRATION_FOLDER, to_use[0]), 'r').read()
+    """
+    Prints sql statements contained in a file by the revision number it appears in the OS
+    :param revision: revision number
+    :return: String
+    """
+    if f"{revision}.sql" in migration_files():
+        return open(os.path.join(MIGRATION_FOLDER, f"{revision}.sql"), 'r').read()
+    return ""
 
 
 def by_index(step):
-    to_use = [_ for num, _ in enumerate(migration_files()) if step == num + 1]
-    if to_use:
-        return open(os.path.join(MIGRATION_FOLDER, to_use[0]), 'r').read()
+    """
+    Prints sql statements contained in a file by the number it appears if listed in the OS
+    :param step: number of the listed file
+    :return: String
+    """
+    try:
+        return open(os.path.join(MIGRATION_FOLDER, migration_files()[step - 1]), 'r').read()
+    except IndexError:
+        return ""
 
 
 def regex(pattern):
+    """
+    Does a pattern search using the system's `find` utility
+    :param pattern: a pattern you intend to search for
+    :return: String
+    """
     cmd = "find " + MIGRATION_FOLDER + " -type f -exec grep -l " + pattern + " {} +"
     out = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     stdout, stderr = out.communicate()
 
     if not stderr:
-        print(stdout.decode())
+        return stdout.decode()
     else:
-        print(stderr.decode())
+        return stderr.decode()

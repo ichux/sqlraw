@@ -12,6 +12,11 @@ from sqlraw.mysql_support import (MYSQL_MIGRATION_UP, MYSQL_MIGRATION_DOWN, MYSQ
 
 
 def mysql(function):
+    """
+    Decorates some methods to ensure that the connections are properly closed or rolled back in case of an error.
+    :param function: the method if decorates
+    :return: method
+    """
     def wrapper(*args, **kwargs):
         connection = None
         try:
@@ -33,6 +38,12 @@ def mysql(function):
 class MySQLScheme(object):
     @staticmethod
     def close(conn, cursor):
+        """
+        Commit an open connection, close the cursor and then close the connection
+        :param conn: connection
+        :param cursor: cursor
+        :return: None
+        """
         conn.commit()
         cursor.close()
         conn.close()
@@ -40,8 +51,13 @@ class MySQLScheme(object):
     @classmethod
     @mysql
     def commit(cls, sql, **kwargs):
+        """
+        A high level abstraction that commits queries to the DB
+        :param sql: query that will be run against a DB
+        :param kwargs: dictionary
+        :return: None
+        """
         conn = kwargs['conn']
-        conn.start_transaction()
 
         cursor = conn.cursor(dictionary=True, buffered=False)
         for _ in cursor.execute(sql, kwargs.get('args'), multi=True):
@@ -52,6 +68,12 @@ class MySQLScheme(object):
     @classmethod
     @mysql
     def fetch_one(cls, sql, **kwargs):
+        """
+        Get one result based on the `sql` and `kwargs.get('args')`
+        :param sql: query that will be run against a DB
+        :param kwargs: dictionary
+        :return: a dictionary of result if found, else None
+        """
         conn = kwargs['conn']
 
         cursor = conn.cursor(dictionary=True, buffered=False)
@@ -66,6 +88,12 @@ class MySQLScheme(object):
     @classmethod
     @mysql
     def fetch_all(cls, sql, **kwargs):
+        """
+        Get more than one result based on the `sql` and `kwargs.get('args')`
+        :param sql: query that will be run against a DB
+        :param kwargs: a dictionary
+        :return: a dictionary of results if found, else None
+        """
         conn = kwargs['conn']
 
         cursor = conn.cursor(dictionary=True, buffered=False)
@@ -108,6 +136,11 @@ def db_initialise():
 
 
 def db_migrate():
+    """
+    Generate a new .sql file that you can alter to taste.
+    The epoch time of generation is used in naming the generated file
+    :return: None
+    """
     when = str(int(time.time()))
     sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
@@ -120,6 +153,10 @@ def db_migrate():
 
 
 def db_upgrade():
+    """
+    Runs an upgrade on a DB using the generated `MIGRATION_FILE`
+    :return: None
+    """
     generate_migration_file()
     dbu_query = anosql.from_path(MIGRATION_FILE, 'psycopg2')
 
@@ -133,6 +170,11 @@ def db_upgrade():
 
 
 def db_downgrade(step):
+    """
+    Downgrades a DB to a previous version as specified with the `step`
+    :param step: number of downgrades to do
+    :return: None
+    """
     to_use = [_.strip('.sql') for _ in migration_files()]
 
     # since it's a downgrade, a reverse of the migration is essential
@@ -155,12 +197,18 @@ def db_downgrade(step):
 
 
 def status():
+    """
+    Shows the already run migrations
+    :return: String
+    """
+    response = []
     to_use = [_.strip('.sql') for _ in migration_files()]
     logger.info(f"migration files: {to_use}")
 
     for step in to_use:
         try:
             if MySQLScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': step}}):
-                print(f"migrations done: {step}")
+                response.append(f"migrations done: {step}")
         except errors.ProgrammingError:
-            print('no present migrations')
+            response.append('no present migrations')
+    return "\n".join(response)

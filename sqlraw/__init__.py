@@ -1,11 +1,14 @@
 import logging
 import os
+import re
 import sys
 from subprocess import Popen, PIPE
 from urllib.parse import urlparse
 
-logger = logging.getLogger('sqlraw')
-logger.setLevel(logging.DEBUG)
+from sqlraw.reserved_keywords import ADAPTERS
+
+LOGGER = logging.getLogger('sqlraw')
+LOGGER.setLevel(logging.DEBUG)
 
 fh = logging.FileHandler(os.getenv('SQLRAW_LOGFILE', 'sqlraw.log'))
 fh.setLevel(logging.DEBUG)
@@ -17,13 +20,13 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 
-logger.addHandler(fh)
-logger.addHandler(ch)
+LOGGER.addHandler(fh)
+LOGGER.addHandler(ch)
 
 try:
     DB_URL = urlparse(os.getenv('SQLRAW_DB_URL'))
 except TypeError:
-    logger.error(f"DB_URL is missing. See `mysql_init.sh or pgsql_init.sh` for pointers")
+    LOGGER.error(f"DB_URL is missing. See `mysql_init.sh or pgsql_init.sh` for pointers")
     sys.exit(1)
 
 SCHEMA = os.getenv('SQLRAW_SCHEMA')
@@ -41,16 +44,21 @@ if not os.path.exists(MIGRATION_FOLDER):
     try:
         os.mkdir(MIGRATION_FOLDER)
     except (Exception,) as error:
-        logger.error(error)
+        LOGGER.error(error)
         raise error
 
-logger.info(f"MIGRATION_FOLDER: {MIGRATION_FOLDER}")
+LOGGER.info(f"MIGRATION_FOLDER: {MIGRATION_FOLDER}")
 
 try:
     MIGRATION_FILE = os.getenv('SQLRAW_MIGRATION_FILE')
 except TypeError:
-    logger.error(f"MIGRATION_FILE is missing. See `mysql_init.sh or pgsql_init.sh` for pointers")
+    LOGGER.error(f"MIGRATION_FILE is missing. See `mysql_init.sh or pgsql_init.sh` for pointers")
     sys.exit(1)
+
+VALID_TABLE_FIELD = re.compile(r"^[a-zA-Z]\w*\Z")
+PYTHON_KEYWORDS = re.compile("^(False|True|and|as|assert|break|class|continue|def|del|elif|else"
+                             "|except|exec|finally|for|from|global|if|import|in|is|lambda|nonlocal"
+                             "|not|or|pass|print|raise|return|try|while|with|yield)$")
 
 
 def migration_files():
@@ -81,7 +89,7 @@ def generate_migration_file():
             with open(os.path.join(MIGRATION_FOLDER, each), 'r') as sql:
                 all_queries += f"{sql.read().strip()}\n\n"
         sql_queries.write(all_queries)
-        logger.info(f'{MIGRATION_FILE} was generated')
+        LOGGER.info(f'{MIGRATION_FILE} was generated')
 
 
 def display_sql(revision):
@@ -121,3 +129,20 @@ def regex(pattern):
         return stdout.decode()
     else:
         return stderr.decode()
+
+
+def keyword(variable):
+    """
+    Verify that the field_name isn't part of know Python keywords
+    :param variable: String
+    :return: Boolean
+    """
+    for backend in ADAPTERS:
+        if variable.upper() in ADAPTERS[backend]:
+            msg = f'Variable "{variable}" is a "{backend.upper()}" reserved SQL/NOSQL keyword'
+            raise SyntaxError(msg)
+
+    if not VALID_TABLE_FIELD.match(field_name) or PYTHON_KEYWORDS.match(field_name):
+        raise SyntaxError(f"Field: invalid field name: {field_name}")
+
+    return f"{variable} isn't a known keyword"

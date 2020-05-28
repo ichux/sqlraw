@@ -2,7 +2,7 @@ import argparse
 
 import sqlraw.mysql
 import sqlraw.postgresql
-from sqlraw import by_index, display_sql, regex, migration_files, files_by_number
+from sqlraw import keyword, by_index, display_sql, regex, migration_files, files_by_number
 from sqlraw.psql_support import DB_URL
 
 
@@ -16,6 +16,7 @@ def parse() -> argparse.ArgumentParser:
     _.add_argument("-v", "--version", action="version", version="sqlraw version 1.0.0")
     _.add_argument('-p', action='append', dest='collection', default=[], help='print sql to terminal')
 
+    _.add_argument("-k", '--keyword', action='store', type=str, help="checks to see if the supplied word is a keyword")
     _.add_argument("-b", '--by_index', action='store', type=int, help="print sql to terminal by number- start at 1")
     _.add_argument("-n", "--by_number", action="store_true", help="list all the migration files by number")
 
@@ -48,6 +49,9 @@ def main():
 
     if arguments.db_upgrade:
         getattr(module, 'db_upgrade')()
+
+    if arguments.keyword:
+        print(keyword(arguments.keyword))
 
     if arguments.db_downgrade:
         getattr(module, 'db_downgrade')(arguments.db_downgrade)

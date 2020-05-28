@@ -8,7 +8,7 @@ import psycopg2
 import psycopg2.errors
 from psycopg2.extras import NamedTupleCursor
 
-from sqlraw import (SCHEMA, MIGRATION_FILE, MIGRATION_FOLDER, migration_files, generate_migration_file, logger)
+from sqlraw import (SCHEMA, LOGGER, MIGRATION_FILE, MIGRATION_FOLDER, migration_files, generate_migration_file)
 from sqlraw.psql_support import (DSN, PGSQL_MIGRATION_UP, PGSQL_MIGRATION_DOWN, PGSQL_UP, PGSQL_DOWN,
                                  IS_MIGRATION_TABLE, REVISION_EXISTS)
 
@@ -28,7 +28,7 @@ def psql(function):
             if connection:
                 connection.rollback()
                 connection.close()
-                logger.error(error)
+                LOGGER.error(error)
             raise error
 
     return functools.update_wrapper(wrapper, function)
@@ -118,14 +118,14 @@ def db_initialise():
                     down = PGSQL_MIGRATION_DOWN.format(f"downgrade-{when}")
 
                     save_sql.write("\n\n".join([up, down]))
-                    logger.info(f"migration file: {os.path.join('migrations', sql_file)}")
+                    LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
             else:
                 when = re.findall('[0-9]+', data)[0]
 
             generate_migration_file()
             dbi_query = anosql.from_path(MIGRATION_FILE, 'psycopg2')
             PostgresScheme.commit(getattr(dbi_query, f"upgrade_{when}").sql)
-            logger.info(f"initial successful migration: {when}")
+            LOGGER.info(f"initial successful migration: {when}")
 
 
 def db_migrate():
@@ -142,7 +142,7 @@ def db_migrate():
         down = PGSQL_DOWN.format(f"downgrade-{when}", when)
 
         save_sql.write("\n\n".join([up, down]))
-        logger.info(f"migration file: {os.path.join('migrations', sql_file)}")
+        LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
 
 
 def db_upgrade():
@@ -157,9 +157,9 @@ def db_upgrade():
         decide = PostgresScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': time_step}}).exists
         if not decide:
             PostgresScheme.commit(getattr(dbu_query, f"upgrade_{time_step}").sql)
-            logger.info(f"successful migration: {time_step}")
+            LOGGER.info(f"successful migration: {time_step}")
         else:
-            logger.info(f'migration already exists: {time_step}')
+            LOGGER.info(f'migration already exists: {time_step}')
 
 
 def db_downgrade(step):
@@ -182,7 +182,7 @@ def db_downgrade(step):
             count += 1
             if PostgresScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': _}}).exists:
                 PostgresScheme.commit(getattr(dbd_query, f"downgrade_{_}").sql)
-                logger.info(f"successful downgrade: {_}")
+                LOGGER.info(f"successful downgrade: {_}")
             if count == step:
                 break
     except psycopg2.errors.UndefinedTable:
@@ -196,7 +196,7 @@ def status():
     """
     response = []
     to_use = [_.strip('.sql') for _ in migration_files()]
-    logger.info(f"migration files: {to_use}")
+    LOGGER.info(f"migration files: {to_use}")
 
     for step in to_use:
         try:

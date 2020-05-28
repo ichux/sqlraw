@@ -8,17 +8,18 @@ that abound. This is plain and raw SQL, as defined by known SQL standards.
 See your `.log` file for information that are helpful. Some of these information are also posted to the terminal.
 
 ## Supported databases and best practises:
-For now, PostgreSQL (through https://www.psycopg.org/docs/faq.html) and 
+For now, PostgreSQL (through https://www.psycopg.org/docs/faq.html), MariaDB and 
 MySQL (through https://dev.mysql.com/doc/connector-python/en/) are supported and there are plans to 
 help it grow into a larger project that will cater to the other databases out there, like SQLite, etc.
 
 For best practises, I have ensured that the PostgreSQL and MySQL links above were followed, and I encourage
-you to do the same. But then, there might be places that I would have missed and will appreciate if you inform me
-about such.
+you to do the same. As for MariaDB, it has the exact drop-in for MySQL, so, same thing applies, often times.
+But then, there might be places that I would have missed and will appreciate if you inform me about such.
 
 ## Good to know
-1. Check to see the files, mysql_init.sh or psql_init.sh for choice variables.
-2. Even if you did not fill in the variables describe in the `shell scripts` in Step 1 above, some assumptions 
+1. Either you DB is MariaDB or MySQL, you should use the same information like `SQLRAW_DB_URL`
+2. Check to see the files, mysql_init.sh or psql_init.sh for choice variables.
+3. Even if you did not fill in the variables describe in the `shell scripts` in Step 1 above, some assumptions 
 are made where necessary. The project will fail and inform you on what caused it and how to go about solving it.
 
 ## How to run
@@ -69,5 +70,7 @@ several migrations.
 - [x] Add documentation in the code where necessary
 - [ ] Prepare the project for PyPi (if possible)
 - [ ] Speak about this project at conferences
-- [ ] Write blog posts and build sample projects on how use it
+- [ ] Write blog posts
+- [ ] Build sample projects on how use it
+- [ ] Release Youtube tutorial videos on it
 - [ ] Welcome contributors

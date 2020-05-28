@@ -142,7 +142,7 @@ def keyword(variable):
             msg = f'Variable "{variable}" is a "{backend.upper()}" reserved SQL/NOSQL keyword'
             raise SyntaxError(msg)
 
-    if not VALID_TABLE_FIELD.match(field_name) or PYTHON_KEYWORDS.match(field_name):
-        raise SyntaxError(f"Field: invalid field name: {field_name}")
+    if not VALID_TABLE_FIELD.match(variable) or PYTHON_KEYWORDS.match(variable):
+        raise SyntaxError(f"Field: invalid field name: {variable}")
 
     return f"{variable} isn't a known keyword"

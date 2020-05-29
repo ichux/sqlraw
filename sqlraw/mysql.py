@@ -123,8 +123,8 @@ def db_initialise():
                 sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
                 with open(sql_file, 'w') as save_sql:
-                    up = MYSQL_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
-                    down = MYSQL_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE)
+                    up = MYSQL_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
+                    down = MYSQL_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE, SCHEMA)
 
                     save_sql.write("\n\n".join([up, down]))
                     LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
@@ -147,8 +147,8 @@ def db_migrate():
     sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
     with open(sql_file, 'w') as save_sql:
-        up = MYSQL_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
-        down = MYSQL_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE)
+        up = MYSQL_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
+        down = MYSQL_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
 
         save_sql.write("\n\n".join([up, down]))
         LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")

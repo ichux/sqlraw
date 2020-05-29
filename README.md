@@ -16,6 +16,9 @@ For best practises, I have ensured that the PostgreSQL and MySQL links above wer
 you to do the same. As for MariaDB, it has the exact drop-in for MySQL, so, same thing applies, often times.
 But then, there might be places that I would have missed and will appreciate if you inform me about such.
 
+`schema` enforcement is on by default. PostgreSQL has a sort of schema that is missing in MySQL/MariaDB 
+and you need to be aware of that.
+
 ## Good to know
 1. Either you DB is MariaDB or MySQL, you should use the same information like `SQLRAW_DB_URL`
 2. Check to see the files, mysql_init.sh or psql_init.sh for choice variables.
@@ -44,12 +47,14 @@ named `school_management.sh` that contains the following (if you are using MySQL
 unset SQLRAW_LOGFILE
 unset SQLRAW_MIGRATION_FOLDER
 unset SQLRAW_MIGRATION_FILE
+unset SQLRAW_MIGRATION_TABLE
 unset SQLRAW_DB_URL
 unset SQLRAW_SCHEMA
 
 export SQLRAW_LOGFILE=$HOME/dm/school-management-mysql/smm.log
 export SQLRAW_MIGRATION_FOLDER=$HOME/dm/school-management-mysql/queries
 export SQLRAW_MIGRATION_FILE=$HOME/dm/school-management-mysql/migrate.sql
+export SQLRAW_MIGRATION_TABLE=migration_data
 export SQLRAW_DB_URL=mysql://username:password@ipaddress:port/school_management
 ````
 Some of the sensible assumptions made is that this program will generate all necessary directories and log files

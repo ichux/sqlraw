@@ -32,7 +32,7 @@ except TypeError:
 SCHEMA = os.getenv('SQLRAW_SCHEMA')
 
 if DB_URL.scheme == 'postgres':
-    SCHEMA = SCHEMA or 'public'
+    SCHEMA = SCHEMA.lower() or 'public'
 
 if DB_URL.scheme == 'mysql':
     SCHEMA = SCHEMA or DB_URL.path.strip('/')

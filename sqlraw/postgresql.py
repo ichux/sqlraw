@@ -8,7 +8,8 @@ import psycopg2
 import psycopg2.errors
 from psycopg2.extras import NamedTupleCursor
 
-from sqlraw import (SCHEMA, LOGGER, MIGRATION_FILE, MIGRATION_FOLDER, migration_files, generate_migration_file)
+from sqlraw import (SCHEMA, LOGGER, MIGRATION_FILE, MIGRATION_FOLDER, MIGRATION_TABLE, migration_files,
+                    generate_migration_file)
 from sqlraw.psql_support import (DSN, PGSQL_MIGRATION_UP, PGSQL_MIGRATION_DOWN, PGSQL_UP, PGSQL_DOWN,
                                  IS_MIGRATION_TABLE, REVISION_EXISTS)
 
@@ -19,6 +20,7 @@ def psql(function):
     :param function: the method if decorates
     :return: method
     """
+
     def wrapper(*args, **kwargs):
         connection = None
         try:
@@ -114,8 +116,8 @@ def db_initialise():
                 sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
                 with open(sql_file, 'w') as save_sql:
-                    up = PGSQL_MIGRATION_UP.format(f"upgrade-{when}", when)
-                    down = PGSQL_MIGRATION_DOWN.format(f"downgrade-{when}")
+                    up = PGSQL_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
+                    down = PGSQL_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE)
 
                     save_sql.write("\n\n".join([up, down]))
                     LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
@@ -138,8 +140,8 @@ def db_migrate():
     sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
     with open(sql_file, 'w') as save_sql:
-        up = PGSQL_UP.format(f"upgrade-{when}", when)
-        down = PGSQL_DOWN.format(f"downgrade-{when}", when)
+        up = PGSQL_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
+        down = PGSQL_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE)
 
         save_sql.write("\n\n".join([up, down]))
         LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")

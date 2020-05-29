@@ -6,7 +6,8 @@ import time
 import anosql
 from mysql.connector.connection import MySQLConnection, errors
 
-from sqlraw import (SCHEMA, LOGGER, DB_URL, MIGRATION_FILE, MIGRATION_FOLDER, migration_files, generate_migration_file)
+from sqlraw import (SCHEMA, LOGGER, DB_URL, MIGRATION_TABLE, MIGRATION_FILE, MIGRATION_FOLDER, migration_files,
+                    generate_migration_file)
 from sqlraw.mysql_support import (MYSQL_MIGRATION_UP, MYSQL_MIGRATION_DOWN, MYSQL_UP, MYSQL_DOWN, IS_MIGRATION_TABLE,
                                   REVISION_EXISTS)
 
@@ -17,6 +18,7 @@ def mysql(function):
     :param function: the method if decorates
     :return: method
     """
+
     def wrapper(*args, **kwargs):
         connection = None
         try:
@@ -121,8 +123,8 @@ def db_initialise():
                 sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
                 with open(sql_file, 'w') as save_sql:
-                    up = MYSQL_MIGRATION_UP.format(f"upgrade-{when}", when)
-                    down = MYSQL_MIGRATION_DOWN.format(f"downgrade-{when}")
+                    up = MYSQL_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
+                    down = MYSQL_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE)
 
                     save_sql.write("\n\n".join([up, down]))
                     LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
@@ -145,8 +147,8 @@ def db_migrate():
     sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
     with open(sql_file, 'w') as save_sql:
-        up = MYSQL_UP.format(f"upgrade-{when}", when)
-        down = MYSQL_DOWN.format(f"downgrade-{when}", when)
+        up = MYSQL_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
+        down = MYSQL_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE)
 
         save_sql.write("\n\n".join([up, down]))
         LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")

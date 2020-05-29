@@ -65,6 +65,10 @@ several migrations.
 2. The default DB port is assumed if you do not add one to your `SQLRAW_DB_URL`
 3. The `SQLRAW_MIGRATION_TABLE` is assumed to be `migrate_db` if you did not provide such
 
+## Helpers
+1. If you cloned this project and want to update it, run `git fetch && git merge origin/master`
+2. To avoid SPAM emails, I used a forwarding email in case you need to reach me. It's in [LICENCE.txt](./LICENSE.txt)
+
 ## TODO
 - [x] Peer review the code
 - [x] Bring the README.md up to date

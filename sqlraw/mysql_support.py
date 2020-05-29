@@ -1,3 +1,5 @@
+from sqlraw import MIGRATION_TABLE
+
 MYSQL_UP = """-- name: {0}
 /**
   Add your comments here.
@@ -5,7 +7,7 @@ MYSQL_UP = """-- name: {0}
 */
 
 
-INSERT INTO migrate_db (revision) VALUES ('{1}');
+INSERT INTO {2} (revision) VALUES ('{1}');
 """
 
 MYSQL_DOWN = """-- name: {0}
@@ -15,26 +17,26 @@ MYSQL_DOWN = """-- name: {0}
 */
 
 
-DELETE FROM migrate_db WHERE revision='{1}';
+DELETE FROM {2} WHERE revision='{1}';
 """
 
 MYSQL_MIGRATION_UP = """-- name: {0}
 /**
-  creates the `migrate_db` table 
+  creates the `{2}` table 
 */
 
-CREATE TABLE IF NOT EXISTS migrate_db (revision varchar(15) NOT NULL, PRIMARY KEY (revision(15)));
-INSERT INTO migrate_db (revision) VALUES ('{1}') ON DUPLICATE KEY UPDATE revision='{1}';
+CREATE TABLE IF NOT EXISTS {2} (revision varchar(15) NOT NULL, PRIMARY KEY (revision(15)));
+INSERT INTO {2} (revision) VALUES ('{1}') ON DUPLICATE KEY UPDATE revision='{1}';
 """
 
 MYSQL_MIGRATION_DOWN = """-- name: {0}
 /**
-  drops the `migrate_db` table
+  drops the `{1}` table
 */
 
-DROP TABLE IF EXISTS migrate_db;
+DROP TABLE IF EXISTS {1};
 """
 
-REVISION_EXISTS = "SELECT revision FROM migrate_db WHERE revision=%(revision)s;"
-IS_MIGRATION_TABLE = "SELECT table_rows FROM information_schema.tables WHERE table_schema=%(schema)s " \
-                     "AND table_name='migrate_db';"
+REVISION_EXISTS = f"SELECT revision FROM {MIGRATION_TABLE} WHERE revision=%(revision)s;"
+IS_MIGRATION_TABLE = f"SELECT table_rows FROM information_schema.tables WHERE table_schema=%(schema)s " \
+                     f"AND table_name='{MIGRATION_TABLE}';"

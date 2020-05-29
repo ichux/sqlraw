@@ -39,6 +39,7 @@ if DB_URL.scheme == 'mysql':
 
 DIRECTORY = os.path.split(os.path.abspath(__file__))[0]
 MIGRATION_FOLDER = os.getenv('SQLRAW_MIGRATION_FOLDER', os.path.join(DIRECTORY, 'migrations'))
+MIGRATION_TABLE = os.getenv('SQLRAW_MIGRATION_TABLE', 'migrate_db')
 
 if not os.path.exists(MIGRATION_FOLDER):
     try:
@@ -146,3 +147,17 @@ def keyword(variable):
         raise SyntaxError(f"Field: invalid field name: {variable}")
 
     return f"{variable} isn't a known keyword"
+
+
+def set_env_variables(bash_file):
+    """
+    Reads and extracts necessary variables in a supplied bash file
+    :param bash_file: a file with terminal variables in it
+    :return: None
+    """
+    if os.path.exists(bash_file):
+        pattern = re.compile(r"export (\w+)(?:=)(.*)$", re.MULTILINE)
+
+        with open(bash_file, "r") as file_:
+            for key, value in re.findall(pattern, file_.read()):
+                os.environ[key] = value

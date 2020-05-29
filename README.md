@@ -63,6 +63,7 @@ several migrations.
 ## Some assumptions made
 1. If you fail to add a `SQLRAW_MIGRATION_FOLDER` a default one will be used. See the [In doubt](#in-doubt) section
 2. The default DB port is assumed if you do not add one to your `SQLRAW_DB_URL`
+3. The `SQLRAW_MIGRATION_TABLE` is assumed to be `migrate_db` if you did not provide such
 
 ## TODO
 - [x] Peer review the code

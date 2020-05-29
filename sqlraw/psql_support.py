@@ -26,9 +26,14 @@ PGSQL_MIGRATION_UP = """-- name: {0}
   creates the `{2}` table 
 */
 
-CREATE SCHEMA IF NOT EXISTS {3};
+"""
+SUBST1 = f"CREATE SCHEMA IF NOT EXISTS {SCHEMA};" if SCHEMA != 'public' else ''
+SUBST2 = """
 CREATE TABLE IF NOT EXISTS {3}.{2} (revision VARCHAR (15) NOT NULL PRIMARY KEY);
-INSERT INTO {3}.{2} (revision) VALUES ('{1}') ON CONFLICT ( revision ) DO NOTHING;"""
+INSERT INTO {3}.{2} (revision) VALUES ('{1}') ON CONFLICT ( revision ) DO NOTHING;
+"""
+
+PGSQL_MIGRATION_UP = PGSQL_MIGRATION_UP + SUBST1 + SUBST2
 
 PGSQL_MIGRATION_DOWN = """-- name: {0}
 /**

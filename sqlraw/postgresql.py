@@ -111,7 +111,7 @@ def db_initialise():
         with open(MIGRATION_FILE, 'r') as init_sql:
             data = init_sql.read()
 
-            if "CREATE TABLE IF NOT EXISTS migrate_db" not in data:
+            if f"CREATE TABLE IF NOT EXISTS {SCHEMA}.{MIGRATION_TABLE}" not in data:
                 when = str(int(time.time()))
                 sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
@@ -200,10 +200,12 @@ def status():
     to_use = [_.strip('.sql') for _ in migration_files()]
     LOGGER.info(f"migration files: {to_use}")
 
-    for step in to_use:
-        try:
+    try:
+        for step in to_use:
             if PostgresScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': step}}).exists:
                 response.append(f"migrations done  : {step}")
-        except psycopg2.errors.UndefinedTable:
-            response.append(f"migrations undone: {step}")
-    return "\n".join(response)
+            else:
+                response.append(f"migrations undone: {step}")
+        return "\n".join(response)
+    except psycopg2.errors.UndefinedTable:
+        return "No existing migration table"

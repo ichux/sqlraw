@@ -23,6 +23,7 @@ ch.setFormatter(formatter)
 LOGGER.addHandler(fh)
 LOGGER.addHandler(ch)
 
+SQLITE_DB_FILE = None
 try:
     DB_URL = urlparse(os.getenv('SQLRAW_DB_URL'))
 except TypeError:

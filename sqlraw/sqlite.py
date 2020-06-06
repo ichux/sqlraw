@@ -6,8 +6,8 @@ import time
 
 import anosql
 
-from sqlraw import (SCHEMA, LOGGER, SQLITE_DB_FILE, MIGRATION_TABLE, MIGRATION_FILE, MIGRATION_FOLDER,
-                    migration_files, generate_migration_file)
+from sqlraw import (LOGGER, SQLITE_DB_FILE, MIGRATION_TABLE, MIGRATION_FILE, MIGRATION_FOLDER, migration_files,
+                    generate_migration_file)
 from sqlraw.sqlite_support import (SQLITE_MIGRATION_UP, SQLITE_MIGRATION_DOWN, SQLITE_UP, SQLITE_DOWN,
                                    IS_MIGRATION_TABLE, REVISION_EXISTS)
 
@@ -158,8 +158,8 @@ def db_migrate():
     sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
     with open(sql_file, 'w') as save_sql:
-        up = SQLITE_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
-        down = SQLITE_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
+        up = SQLITE_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
+        down = SQLITE_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE)
 
         save_sql.write("\n\n".join([up, down]))
         LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")

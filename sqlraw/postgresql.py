@@ -203,7 +203,7 @@ def status():
     for step in to_use:
         try:
             if PostgresScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': step}}).exists:
-                response.append(f"migrations done: {step}")
+                response.append(f"migrations done  : {step}")
         except psycopg2.errors.UndefinedTable:
-            response.append('no present migrations')
+            response.append(f"migrations undone: {step}")
     return "\n".join(response)

@@ -1,18 +1,18 @@
 import functools
 import os
 import re
+import sqlite3
 import time
 
 import anosql
-from mysql.connector.connection import MySQLConnection, errors
 
-from sqlraw import (SCHEMA, LOGGER, DB_URL, MIGRATION_TABLE, MIGRATION_FILE, MIGRATION_FOLDER, migration_files,
-                    generate_migration_file)
-from sqlraw.mysql_support import (MYSQL_MIGRATION_UP, MYSQL_MIGRATION_DOWN, MYSQL_UP, MYSQL_DOWN, IS_MIGRATION_TABLE,
-                                  REVISION_EXISTS)
+from sqlraw import (SCHEMA, LOGGER, SQLITE_DB_FILE, MIGRATION_TABLE, MIGRATION_FILE, MIGRATION_FOLDER,
+                    migration_files, generate_migration_file)
+from sqlraw.sqlite_support import (SQLITE_MIGRATION_UP, SQLITE_MIGRATION_DOWN, SQLITE_UP, SQLITE_DOWN,
+                                   IS_MIGRATION_TABLE, REVISION_EXISTS)
 
 
-def mysql(function):
+def sqlite(function):
     """
     Decorates some methods to ensure that the connections are properly closed or rolled back in case of an error.
     :param function: the method if decorates
@@ -22,14 +22,10 @@ def mysql(function):
     def wrapper(*args, **kwargs):
         connection = None
         try:
-
-            connection = kwargs['conn'] = MySQLConnection(host=DB_URL.hostname, user=DB_URL.username,
-                                                          port=DB_URL.port or 3306, password=DB_URL.password,
-                                                          database=DB_URL.path.strip('/'))
+            connection = kwargs['conn'] = sqlite3.connect(SQLITE_DB_FILE)
             return function(*args, **kwargs)
-        except (Exception, errors.Error) as error:
+        except (Exception, sqlite3.Error) as error:
             if connection:
-                connection.rollback()
                 connection.close()
                 LOGGER.error(error)
             raise error
@@ -37,7 +33,7 @@ def mysql(function):
     return functools.update_wrapper(wrapper, function)
 
 
-class MySQLScheme(object):
+class SQLiteScheme(object):
     @staticmethod
     def close(conn, cursor):
         """
@@ -51,7 +47,7 @@ class MySQLScheme(object):
         conn.close()
 
     @classmethod
-    @mysql
+    @sqlite
     def commit(cls, sql, **kwargs):
         """
         A high level abstraction that commits queries to the DB
@@ -60,15 +56,20 @@ class MySQLScheme(object):
         :return: None
         """
         conn = kwargs['conn']
+        cursor = conn.cursor()
 
-        cursor = conn.cursor(dictionary=True, buffered=False)
-        for _ in cursor.execute(sql, kwargs.get('args'), multi=True):
-            pass
+        if not kwargs.get('args'):
+            try:
+                cursor.execute(sql)
+            except sqlite3.Warning:
+                cursor.executescript(sql)
+        else:
+            cursor.executescript(sql, kwargs.get('args'))
 
         cls.close(conn, cursor)
 
     @classmethod
-    @mysql
+    @sqlite
     def fetch_one(cls, sql, **kwargs):
         """
         Get one result based on the `sql` and `kwargs.get('args')`
@@ -77,18 +78,24 @@ class MySQLScheme(object):
         :return: a dictionary of result if found, else None
         """
         conn = kwargs['conn']
+        cursor = conn.cursor()
 
-        cursor = conn.cursor(dictionary=True, buffered=False)
-        for _ in cursor.execute(sql, kwargs.get('args'), multi=True):
-            pass
+        if not kwargs.get('args'):
+            parameter = ()
+        else:
+            parameter = kwargs.get('args')
+
+        cursor.execute(sql, parameter)
 
         result = cursor.fetchone()
         cls.close(conn, cursor)
 
-        return result
+        if result:
+            return result[0]
+        return None
 
     @classmethod
-    @mysql
+    @sqlite
     def fetch_all(cls, sql, **kwargs):
         """
         Get more than one result based on the `sql` and `kwargs.get('args')`
@@ -98,9 +105,13 @@ class MySQLScheme(object):
         """
         conn = kwargs['conn']
 
-        cursor = conn.cursor(dictionary=True, buffered=False)
-        for _ in cursor.execute(sql, kwargs.get('args'), multi=True):
-            pass
+        cursor = conn.cursor()
+        if not kwargs.get('args'):
+            parameter = ()
+        else:
+            parameter = kwargs.get('args')
+
+        cursor.execute(sql, parameter)
 
         result = cursor.fetchall()
         cls.close(conn, cursor)
@@ -114,17 +125,17 @@ def db_initialise():
     :return: None
     """
     generate_migration_file()
-    if not MySQLScheme.fetch_one(IS_MIGRATION_TABLE, **{"args": {'schema': SCHEMA}}):
+    if not SQLiteScheme.fetch_one(IS_MIGRATION_TABLE):
         with open(MIGRATION_FILE, 'r') as init_sql:
             data = init_sql.read()
 
-            if "CREATE TABLE IF NOT EXISTS migrate_db" not in data:
+            if f"CREATE TABLE IF NOT EXISTS {MIGRATION_TABLE}" not in data:
                 when = str(int(time.time()))
                 sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
                 with open(sql_file, 'w') as save_sql:
-                    up = MYSQL_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
-                    down = MYSQL_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE, SCHEMA)
+                    up = SQLITE_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
+                    down = SQLITE_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE)
 
                     save_sql.write("\n\n".join([up, down]))
                     LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
@@ -132,8 +143,8 @@ def db_initialise():
                 when = re.findall('[0-9]+', data)[0]
 
             generate_migration_file()
-            dbi_query = anosql.from_path(MIGRATION_FILE, 'psycopg2')
-            MySQLScheme.commit(getattr(dbi_query, f"upgrade_{when}").sql)
+            dbi_query = anosql.from_path(MIGRATION_FILE, 'sqlite3')
+            SQLiteScheme.commit(getattr(dbi_query, f"upgrade_{when}").sql)
             LOGGER.info(f"initial successful migration: {when}")
 
 
@@ -147,8 +158,8 @@ def db_migrate():
     sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
     with open(sql_file, 'w') as save_sql:
-        up = MYSQL_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
-        down = MYSQL_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
+        up = SQLITE_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
+        down = SQLITE_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
 
         save_sql.write("\n\n".join([up, down]))
         LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
@@ -160,13 +171,17 @@ def db_upgrade():
     :return: None
     """
     generate_migration_file()
-    dbu_query = anosql.from_path(MIGRATION_FILE, 'psycopg2')
+    dbu_query = anosql.from_path(MIGRATION_FILE, 'sqlite3')
 
     for time_step in [_.strip('.sql') for _ in migration_files()]:
-        decide = MySQLScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': time_step}})
+        decide = SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": (time_step,)})
+
         if not decide:
-            MySQLScheme.commit(getattr(dbu_query, f"upgrade_{time_step}").sql)
-            LOGGER.info(f"successful migration: {time_step}")
+            try:
+                SQLiteScheme.commit(getattr(dbu_query, f"upgrade_{time_step}").sql)
+                LOGGER.info(f"successful migration: {time_step}")
+            except sqlite3.Error as error:
+                LOGGER.info(f"Error: {error}")
         else:
             LOGGER.info(f'migration already exists: {time_step}')
 
@@ -183,14 +198,14 @@ def db_downgrade(step):
     to_use.reverse()
 
     generate_migration_file()
-    dbd_query = anosql.from_path(MIGRATION_FILE, 'psycopg2')
+    dbd_query = anosql.from_path(MIGRATION_FILE, 'sqlite3')
 
     try:
         count = 0
         for _ in to_use:
             count += 1
-            if MySQLScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': _}}):
-                MySQLScheme.commit(getattr(dbd_query, f"downgrade_{_}").sql)
+            if SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": (_,)}):
+                SQLiteScheme.commit(getattr(dbd_query, f"downgrade_{_}").sql)
                 LOGGER.info(f"successful downgrade: {_}")
             if count == step:
                 break
@@ -207,10 +222,12 @@ def status():
     to_use = [_.strip('.sql') for _ in migration_files()]
     LOGGER.info(f"migration files: {to_use}")
 
-    for step in to_use:
-        try:
-            if MySQLScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': step}}):
+    try:
+        for step in to_use:
+            if SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": (step,)}):
                 response.append(f"migrations done  : {step}")
-        except errors.ProgrammingError:
-            response.append(f"migrations undone: {step}")
-    return "\n".join(response)
+            else:
+                response.append(f"migrations undone: {step}")
+        return "\n".join(response)
+    except sqlite3.OperationalError:
+        return "No existing migration table"

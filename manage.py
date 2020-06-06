@@ -2,6 +2,7 @@ import argparse
 
 import sqlraw.mysql
 import sqlraw.postgresql
+import sqlraw.sqlite
 from sqlraw import keyword, by_index, display_sql, regex, migration_files, files_by_number
 from sqlraw.psql_support import DB_URL
 
@@ -13,7 +14,7 @@ def parse() -> argparse.ArgumentParser:
     """
     _ = argparse.ArgumentParser(description='Manage your DB migrations', allow_abbrev=False)
 
-    _.add_argument("-v", "--version", action="version", version="sqlraw version 1.0.3")
+    _.add_argument("-v", "--version", action="version", version="sqlraw version 1.0.4")
     _.add_argument('-p', action='append', dest='collection', default=[], help='print sql to terminal')
 
     _.add_argument("-k", '--keyword', action='store', type=str, help="checks to see if the supplied word is a keyword")
@@ -39,7 +40,8 @@ def main():
     """
     parser = parse()
     arguments = parser.parse_args()
-    module = sqlraw.postgresql if DB_URL.scheme == 'postgres' else sqlraw.mysql
+
+    module = which_module()
 
     if arguments.db_initialise:
         getattr(module, 'db_initialise')()
@@ -74,6 +76,21 @@ def main():
     if arguments.collection:
         for _ in arguments.collection:
             print(display_sql(_))
+
+
+def which_module():
+    """
+    Decides on which module to run based on the scheme supplied
+    :return: Object
+    """
+    if DB_URL.scheme == 'postgres':
+        return sqlraw.postgresql
+
+    if DB_URL.scheme == 'mysql':
+        return sqlraw.mysql
+
+    if DB_URL.scheme == 'sqlite':
+        return sqlraw.sqlite
 
 
 if __name__ == '__main__':

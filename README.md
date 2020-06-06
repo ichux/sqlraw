@@ -1,23 +1,24 @@
 ## SQLRAW
 
-This project intends to help anyone make use of raw sql queries while building applications of any size
+This project aims to help you run `DB migrations` using raw sql queries while building applications of any size
 and in any programming language. This is achieved by decoupling you from any framework or SQL abstractions
-that abound. This is plain and raw SQL, as defined by known SQL standards.
+that abound. This is plain and raw SQL, as defined by known SQL standards. `python manage.py -h` will show you
+the help manual. However, before then, you need to [set up the project](#how-to-run).
 
 ## In doubt?
 See your `.log` file for information that are helpful. Some of these information are also posted to the terminal.
 
 ## Supported databases and best practises:
-For now, PostgreSQL (through https://www.psycopg.org/docs/faq.html), MariaDB and 
+For now, SQLite, PostgreSQL (through https://www.psycopg.org/docs/faq.html), MariaDB and 
 MySQL (through https://dev.mysql.com/doc/connector-python/en/) are supported and there are plans to 
-help it grow into a larger project that will cater to the other databases out there, like SQLite, etc.
+help it grow into a larger project that will cater to the other databases out there, like mongodb, etc.
 
 For best practises, I have ensured that the PostgreSQL and MySQL links above were followed, and I encourage
 you to do the same. As for MariaDB, it has the exact drop-in for MySQL, so, same thing applies, often times.
 But then, there might be places that I would have missed and will appreciate if you inform me about such.
 
 `schema` enforcement is on by default. PostgreSQL has a sort of schema that is missing in MySQL/MariaDB 
-and you need to be aware of that.
+and you need to be aware of that. `sqlite` in memory type `:memory:` will not work!
 
 ## Good to know
 1. Either you DB is MariaDB or MySQL, you should use the same information like `SQLRAW_DB_URL`

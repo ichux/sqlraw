@@ -37,6 +37,13 @@ if DB_URL.scheme == 'postgres':
 if DB_URL.scheme == 'mysql':
     SCHEMA = SCHEMA or DB_URL.path.strip('/')
 
+if DB_URL.scheme == 'sqlite':
+    if DB_URL.netloc:
+        LOGGER.error(f"{DB_URL.netloc} isn't supported. Use a real file path. See `sqlite_init.sh` for pointers")
+        sys.exit(1)
+
+    SQLITE_DB_FILE = DB_URL.path
+
 DIRECTORY = os.path.split(os.path.abspath(__file__))[0]
 MIGRATION_FOLDER = os.getenv('SQLRAW_MIGRATION_FOLDER', os.path.join(DIRECTORY, 'migrations'))
 MIGRATION_TABLE = os.getenv('SQLRAW_MIGRATION_TABLE', 'migrate_db')

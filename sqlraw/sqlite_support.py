@@ -35,5 +35,5 @@ SQLITE_MIGRATION_DOWN = """-- name: {0}
 DROP TABLE IF EXISTS {1};
 """
 
-REVISION_EXISTS = f"SELECT revision FROM {MIGRATION_TABLE} WHERE revision=?;"
+REVISION_EXISTS = f"SELECT revision FROM {MIGRATION_TABLE} WHERE revision=:revision;"
 IS_MIGRATION_TABLE = f"SELECT count(*) FROM sqlite_master WHERE type='table' AND name='{MIGRATION_TABLE}';"

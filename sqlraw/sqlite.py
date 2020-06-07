@@ -80,11 +80,7 @@ class SQLiteScheme(object):
         conn = kwargs['conn']
         cursor = conn.cursor()
 
-        if not kwargs.get('args'):
-            parameter = ()
-        else:
-            parameter = kwargs.get('args')
-
+        parameter = {} if not kwargs.get('args') else kwargs.get('args')
         cursor.execute(sql, parameter)
 
         result = cursor.fetchone()
@@ -104,13 +100,9 @@ class SQLiteScheme(object):
         :return: a dictionary of results if found, else None
         """
         conn = kwargs['conn']
-
         cursor = conn.cursor()
-        if not kwargs.get('args'):
-            parameter = ()
-        else:
-            parameter = kwargs.get('args')
 
+        parameter = {} if not kwargs.get('args') else kwargs.get('args')
         cursor.execute(sql, parameter)
 
         result = cursor.fetchall()
@@ -174,7 +166,7 @@ def db_upgrade():
     dbu_query = anosql.from_path(MIGRATION_FILE, 'sqlite3')
 
     for time_step in [_.strip('.sql') for _ in migration_files()]:
-        decide = SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": (time_step,)})
+        decide = SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': time_step}})
 
         if not decide:
             try:
@@ -204,7 +196,7 @@ def db_downgrade(step):
         count = 0
         for _ in to_use:
             count += 1
-            if SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": (_,)}):
+            if SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': _}}):
                 SQLiteScheme.commit(getattr(dbd_query, f"downgrade_{_}").sql)
                 LOGGER.info(f"successful downgrade: {_}")
             if count == step:
@@ -224,7 +216,7 @@ def status():
 
     try:
         for step in to_use:
-            if SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": (step,)}):
+            if SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': step}}):
                 response.append(f"migrations done  : {step}")
             else:
                 response.append(f"migrations undone: {step}")

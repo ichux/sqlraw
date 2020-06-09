@@ -5,6 +5,8 @@ import sys
 from subprocess import Popen, PIPE
 from urllib.parse import urlparse
 
+import sqlparse
+
 from sqlraw.reserved_keywords import ADAPTERS
 
 LOGGER = logging.getLogger('sqlraw')
@@ -120,6 +122,19 @@ def by_index(step):
     """
     try:
         return open(os.path.join(MIGRATION_FOLDER, migration_files()[step - 1]), 'r').read()
+    except IndexError:
+        return ""
+
+
+def format_by_index(step):
+    """
+    Formats sql statements contained in a file by the number it appears if listed in the OS
+    :param step: number of the listed file
+    :return: String
+    """
+    try:
+        query = open(os.path.join(MIGRATION_FOLDER, migration_files()[step - 1]), 'r').read()
+        return sqlparse.format(query, reindent=True, keyword_case='upper')
     except IndexError:
         return ""
 

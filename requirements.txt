@@ -3,3 +3,4 @@ mysql-connector-python==8.0.20
 protobuf==3.12.2
 psycopg2-binary==2.8.5
 six==1.15.0
+sqlparse==0.3.1

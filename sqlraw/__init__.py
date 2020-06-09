@@ -9,6 +9,10 @@ import sqlparse
 
 from sqlraw.reserved_keywords import ADAPTERS
 
+DIRECTORY = os.path.split(os.path.abspath(__file__))[0]
+MIGRATION_FOLDER = os.getenv('SQLRAW_MIGRATION_FOLDER', os.path.join(DIRECTORY, 'migrations'))
+os.makedirs(MIGRATION_FOLDER, exist_ok=True)
+
 LOGGER = logging.getLogger('sqlraw')
 LOGGER.setLevel(logging.DEBUG)
 
@@ -24,6 +28,8 @@ ch.setFormatter(formatter)
 
 LOGGER.addHandler(fh)
 LOGGER.addHandler(ch)
+
+LOGGER.info(f"MIGRATION_FOLDER: {MIGRATION_FOLDER}")
 
 SQLITE_DB_FILE = None
 try:
@@ -47,18 +53,7 @@ if DB_URL.scheme == 'sqlite':
 
     SQLITE_DB_FILE = DB_URL.path
 
-DIRECTORY = os.path.split(os.path.abspath(__file__))[0]
-MIGRATION_FOLDER = os.getenv('SQLRAW_MIGRATION_FOLDER', os.path.join(DIRECTORY, 'migrations'))
 MIGRATION_TABLE = os.getenv('SQLRAW_MIGRATION_TABLE', 'migrate_db')
-
-if not os.path.exists(MIGRATION_FOLDER):
-    try:
-        os.mkdir(MIGRATION_FOLDER)
-    except (Exception,) as error:
-        LOGGER.error(error)
-        raise error
-
-LOGGER.info(f"MIGRATION_FOLDER: {MIGRATION_FOLDER}")
 
 try:
     MIGRATION_FILE = os.getenv('SQLRAW_MIGRATION_FILE')

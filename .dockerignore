@@ -1,0 +1,17 @@
+.git
+.cache
+*.md
+*.wpu
+*.wpr
+!README*.md
+README-secret.md
+.idea
+.DS_Store
+__pycache__/
+*.py[cod]
+*$py.class
+venv
+.venv
+experiments/
+LICENSE.txt
+MANIFEST.in

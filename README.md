@@ -27,17 +27,19 @@ and you need to be aware of that. `sqlite` in memory type `:memory:` will not wo
 are made where necessary. The project will fail and inform you on what caused it and how to go about solving it.
 
 ## How to run
-1. Ensure you have **Python v3** installed:
+1. Use [docker for sqlraw](https://hub.docker.com/r/ichux/sqlraw)
+2. Manually install everything by yourself
+- Ensure you have **Python v3** installed:
    - I worked with Python 3.8.2.
    - If you like to work using a *virtual environment* then that will also be fine.
-2. Run `pip install -U pip setuptools wheel` and then activate your Python environment, if need be.
-3. git clone git@github.com:ichux/sqlraw.git and `cd sqlraw`
-4. Run `pip install -r requirements.txt`
-5. Create your own shell script using the sample in [mysql_init.sh](./mysql_init.sh) and [psql_init.sh](./psql_init.sh)
+- Run `pip install -U pip setuptools wheel` and then activate your Python environment, if need be.
+- git clone git@github.com:ichux/sqlraw.git and `cd sqlraw`
+- Run `pip install -r requirements.txt`
+- Create your own shell script using the sample in [mysql_init.sh](./mysql_init.sh) and [psql_init.sh](./psql_init.sh)
     - Run such by viewing examples of how to run such scripts in the same sample script you used.
     - Do note that `SQLRAW_DB_URL` follows this method `SCHEME://USERNAME:PASSWORD@IPADDRESS:PORT/DATABASE`
     - Do note that the DB details have to match the exact DB you intend to use.
-6. Test the program: `python manage.py -v` or `python manage.py -h`. See [sample screen shot](./sample.png).
+- Test the program: `python manage.py -v` or `python manage.py -h`. See [sample screen shot](./sample.png).
 
 ## Script files
 Under _How to run_ at the `Step 5` I mentioned you creating your own script from the sample attached to this project.
@@ -76,12 +78,9 @@ several migrations.
 2. To avoid SPAM emails, I used a forwarding email in case you need to reach me. It's in [LICENCE.txt](./LICENSE.txt)
 
 ## TODO
-- [x] Peer review the code
-- [x] Bring the README.md up to date
-- [x] Add documentation in the code where necessary
+- [x] Welcome contributors
 - [ ] Prepare the project for PyPi (if possible)
 - [ ] Speak about this project at conferences
 - [ ] Write blog posts
 - [ ] Build sample projects on how use it
 - [ ] Release Youtube tutorial videos on it
-- [ ] Welcome contributors

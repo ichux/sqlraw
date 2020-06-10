@@ -21,7 +21,7 @@ But then, there might be places that I would have missed and will appreciate if 
 and you need to be aware of that. `sqlite` in memory type `:memory:` will not work!
 
 ## Good to know
-1. Either you DB is MariaDB or MySQL, you should use the same information like `SQLRAW_DB_URL`
+1. Either you are using MariaDB or MySQL, you should use the same information like `SQLRAW_DB_URL`
 2. Check to see the files, mysql_init.sh or psql_init.sh for choice variables.
 3. Even if you did not fill in the variables describe in the `shell scripts` in Step 1 above, some assumptions 
 are made where necessary. The project will fail and inform you on what caused it and how to go about solving it.

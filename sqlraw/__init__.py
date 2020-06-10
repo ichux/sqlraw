@@ -128,8 +128,16 @@ def format_by_index(step):
     :return: String
     """
     try:
-        query = open(os.path.join(MIGRATION_FOLDER, migration_files()[step - 1]), 'r').read()
-        return sqlparse.format(query, reindent=True, keyword_case='upper')
+        file_to_alter = os.path.join(MIGRATION_FOLDER, migration_files()[step - 1])
+
+        with open(file_to_alter, 'r') as file_text:
+            query = file_text.read()
+
+        with open(file_to_alter, 'w') as file_text:
+            formatted = sqlparse.format(query, reindent=True, keyword_case='upper')
+            file_text.write(formatted)
+
+        return '\n'.join(["==--OLD QUERY--==", query, "==--NEW QUERY--==", formatted])
     except IndexError:
         return ""
 
@@ -140,7 +148,7 @@ def regex(pattern):
     :param pattern: a pattern you intend to search for
     :return: String
     """
-    cmd = "find " + MIGRATION_FOLDER + " -type f -exec grep -l " + pattern + " {} +"
+    cmd = "find " + MIGRATION_FOLDER + " -type f -exec grep -il " + pattern + " {} +"
     out = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     stdout, stderr = out.communicate()
 

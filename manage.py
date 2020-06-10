@@ -14,7 +14,7 @@ def parse() -> argparse.ArgumentParser:
     """
     _ = argparse.ArgumentParser(description='Manage your DB migrations', allow_abbrev=False)
 
-    _.add_argument("-v", "--version", action="version", version="sqlraw version 1.0.8")
+    _.add_argument("-v", "--version", action="version", version="sqlraw version 1.0.9")
     _.add_argument('-p', action='append', dest='collection', default=[], help='print sql to terminal')
 
     _.add_argument("-k", '--keyword', action='store', type=str, help="checks to see if the supplied word is a keyword")

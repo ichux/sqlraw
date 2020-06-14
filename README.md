@@ -25,6 +25,7 @@ and you need to be aware of that. `sqlite` in memory type `:memory:` will not wo
 2. Check to see the files, mysql_init.sh or psql_init.sh for choice variables.
 3. Even if you did not fill in the variables describe in the `shell scripts` in Step 1 above, some assumptions 
 are made where necessary. The project will fail and inform you on what caused it and how to go about solving it.
+4. `SQLRAW_CHECKS_OFF=1` will activate the ability to enforce constraints checks during migration(s).
 
 ## How to run
 1. Use [docker for sqlraw](https://hub.docker.com/r/ichux/sqlraw)
@@ -53,12 +54,14 @@ unset SQLRAW_MIGRATION_FILE
 unset SQLRAW_MIGRATION_TABLE
 unset SQLRAW_DB_URL
 unset SQLRAW_SCHEMA
+unset SQLRAW_CHECKS_OFF
 
 export SQLRAW_LOGFILE=$HOME/dm/school-management-mysql/smm.log
 export SQLRAW_MIGRATION_FOLDER=$HOME/dm/school-management-mysql/queries
 export SQLRAW_MIGRATION_FILE=$HOME/dm/school-management-mysql/migrate.sql
 export SQLRAW_MIGRATION_TABLE=migration_data
 export SQLRAW_DB_URL=mysql://username:password@ipaddress:port/school_management
+export SQLRAW_CHECKS_OFF=1
 ````
 Some of the sensible assumptions made is that this program will generate all necessary directories and log files
 as long as it has permission to the parent folder. It will also be better if you have a common directory, 
@@ -72,6 +75,7 @@ several migrations.
 1. If you fail to add a `SQLRAW_MIGRATION_FOLDER` a default one will be used. See the [In doubt](#in-doubt) section
 2. The default DB port is assumed if you do not add one to your `SQLRAW_DB_URL`
 3. The `SQLRAW_MIGRATION_TABLE` is assumed to be `migrate_db` if you did not provide such
+3. The `SQLRAW_CHECKS_OFF` is assumed to be `0` if you did not provide such
 
 ## Helpers
 1. If you cloned this project and want to update it, run `git fetch && git merge origin/master`

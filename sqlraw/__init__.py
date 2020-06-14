@@ -54,6 +54,7 @@ if DB_URL.scheme == 'sqlite':
     SQLITE_DB_FILE = DB_URL.path
 
 MIGRATION_TABLE = os.getenv('SQLRAW_MIGRATION_TABLE', 'migrate_db')
+CHECKS_OFF = os.getenv('SQLRAW_CHECKS_OFF', 0)
 
 try:
     MIGRATION_FILE = os.getenv('SQLRAW_MIGRATION_FILE')

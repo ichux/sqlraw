@@ -3,6 +3,7 @@ help:
 	@echo "  build			build the image"
 	@echo "  bash			to make bash for the docker environment"
 	@echo "  access		to make the environment fit by changing the modes"
+	@echo "  upload		uploads to docker hub"
 
 clean:
 	@find . -name '__MACOSX' -type d -print0 | xargs -0 /bin/rm -rf '{}'
@@ -17,10 +18,10 @@ build: clean
 	@docker-compose --project-name query build
 
 bash:
-	@docker-compose --project-name query run --rm --name sql-raw sqlraw
+	@docker-compose --project-name query run --rm --name rawsql sqlraw
 
 access:
-	@docker exec -u root sql-raw chmod 777 .
+	@docker exec -u root rawsql chmod 777 .
 
 upload:
 	@docker login

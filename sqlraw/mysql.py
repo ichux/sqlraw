@@ -6,10 +6,10 @@ import time
 import anosql
 from mysql.connector.connection import MySQLConnection, errors
 
-from sqlraw import (SCHEMA, LOGGER, DB_URL, MIGRATION_TABLE, MIGRATION_FILE, MIGRATION_FOLDER, migration_files,
-                    generate_migration_file)
+from sqlraw import (SCHEMA, LOGGER, DB_URL, MIGRATION_TABLE, MIGRATION_FILE, MIGRATION_FOLDER, CHECKS_OFF,
+                    migration_files, generate_migration_file)
 from sqlraw.mysql_support import (MYSQL_MIGRATION_UP, MYSQL_MIGRATION_DOWN, MYSQL_UP, MYSQL_DOWN, IS_MIGRATION_TABLE,
-                                  REVISION_EXISTS)
+                                  REVISION_EXISTS, TURN_CHECKS_OFF)
 
 
 def mysql(function):
@@ -62,6 +62,9 @@ class MySQLScheme(object):
         conn = kwargs['conn']
 
         cursor = conn.cursor(dictionary=True, buffered=False)
+        if CHECKS_OFF:
+            sql = TURN_CHECKS_OFF + sql
+
         for _ in cursor.execute(sql, kwargs.get('args'), multi=True):
             pass
 
@@ -118,13 +121,13 @@ def db_initialise():
         with open(MIGRATION_FILE, 'r') as init_sql:
             data = init_sql.read()
 
-            if f"CREATE TABLE IF NOT EXISTS {SCHEMA}.{MIGRATION_TABLE}" not in data:
+            if f"CREATE TABLE IF NOT EXISTS {MIGRATION_TABLE}" not in data:
                 when = str(int(time.time()))
                 sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
                 with open(sql_file, 'w') as save_sql:
-                    up = MYSQL_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
-                    down = MYSQL_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE, SCHEMA)
+                    up = MYSQL_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
+                    down = MYSQL_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE)
 
                     save_sql.write("\n\n".join([up, down]))
                     LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
@@ -147,8 +150,8 @@ def db_migrate():
     sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
     with open(sql_file, 'w') as save_sql:
-        up = MYSQL_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
-        down = MYSQL_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE, SCHEMA)
+        up = MYSQL_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
+        down = MYSQL_DOWN.format(f"downgrade-{when}", when, MIGRATION_TABLE)
 
         save_sql.write("\n\n".join([up, down]))
         LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")

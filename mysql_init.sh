@@ -13,9 +13,9 @@ unset SQLRAW_DB_URL
 unset SQLRAW_SCHEMA
 unset SQLRAW_CHECKS_OFF
 
-export SQLRAW_LOGFILE=$HOME/Documents/codes/python/project/sqlraw/mysql-sqlraw.log
-export SQLRAW_MIGRATION_FOLDER=$HOME/Documents/codes/python/project/sqlraw/MySQLQueries
-export SQLRAW_MIGRATION_FILE=$HOME/Documents/codes/python/project/sqlraw/mysql-migrate.sql
+export SQLRAW_LOGFILE=$PWD/dbs/mysql/attention.log
+export SQLRAW_MIGRATION_FOLDER=$PWD/dbs/mysql/queries
+export SQLRAW_MIGRATION_FILE=$PWD/dbs/mysql/migrate.sql
 export SQLRAW_MIGRATION_TABLE=migration_data
 export SQLRAW_DB_URL=mysql://backend:5ec8b1681@localhost:3306/docker
 export SQLRAW_CHECKS_OFF=1

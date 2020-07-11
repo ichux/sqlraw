@@ -12,10 +12,10 @@ unset SQLRAW_MIGRATION_TABLE
 unset SQLRAW_DB_URL
 unset SQLRAW_SCHEMA
 
-export SQLRAW_LOGFILE=$HOME/Documents/codes/python/project/sqlraw/attention.log
-export SQLRAW_MIGRATION_FOLDER=$HOME/Documents/codes/python/project/sqlraw/SQLiteQueries
-export SQLRAW_MIGRATION_FILE=$HOME/Documents/codes/python/project/sqlraw/migrate.sql
+export SQLRAW_LOGFILE=$PWD/dbs/sqlite/attention.log
+export SQLRAW_MIGRATION_FOLDER=$PWD/dbs/sqlite/queries
+export SQLRAW_MIGRATION_FILE=$PWD/dbs/sqlite/migrate.sql
 export SQLRAW_MIGRATION_TABLE=migration_data
-export SQLRAW_DB_URL=sqlite://$HOME/Documents/codes/python/project/sqlraw/sqlraw.db
+export SQLRAW_DB_URL=sqlite://$PWD/dbs/sqlite/sqlraw.db
 
 printenv | grep SQLRAW

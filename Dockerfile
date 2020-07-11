@@ -2,13 +2,13 @@ FROM python:3.8.3-buster
 
 VOLUME /source
 WORKDIR /source
-RUN groupadd -g 999 docker && useradd -r -u 999 -g docker docker
 
+# copy directory
 COPY sqlraw /source/sqlraw/
+
+# copy files
 COPY manage.py mysql_init.sh psql_init.sh sqlite_init.sh requirements.txt /source/
 
-RUN pip install -U pip setuptools wheel
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -U pip setuptools wheel -r requirements.txt
 
-USER docker
 CMD [ "bash" ]

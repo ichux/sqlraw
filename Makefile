@@ -3,6 +3,7 @@ help:
 	@echo "  build			build the image"
 	@echo "  bash			to make bash for the docker environment"
 	@echo "  access		to make the environment fit by changing the modes"
+	@echo "  tag			tags the image"
 	@echo "  upload		uploads to docker hub"
 
 clean:
@@ -16,14 +17,18 @@ clean:
 
 build: clean
 	@docker-compose --project-name query build
+	@make tag
 
 bash:
+	@#CURRENT_UID=$(id -u):$(id -g) docker-compose --project-name query run --rm --name rawsql sqlraw
 	@docker-compose --project-name query run --rm --name rawsql sqlraw
 
 access:
 	@docker exec -u root rawsql chmod 777 .
 
+tag:
+	@docker tag query_sqlraw:latest ichux/sqlraw:latest
+
 upload:
 	@docker login
-	@docker tag query_sqlraw:latest ichux/sqlraw:latest
 	@docker push ichux/sqlraw:latest

@@ -20,7 +20,8 @@ build: clean
 	@make tag
 
 bash:
-	@#CURRENT_UID=$(id -u):$(id -g) docker-compose --project-name query run --rm --name rawsql sqlraw
+	@#CURRENT_UID=$(id -u):$(id -g) docker-compose --project-name \
+	 query run --rm --name rawsql sqlraw
 	@docker-compose --project-name query run --rm --name rawsql sqlraw
 
 access:

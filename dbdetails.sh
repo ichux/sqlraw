@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# to run
-#1. cd to the directory that contains this script and run what's in step 2
-#2. `source sqlite_init.sh` OR `. sqlite_init.sh`
-
-# clear the variables in the terminals, in case you had a change somewhere!
 unset SQLRAW_LOGFILE
 unset SQLRAW_MIGRATION_FOLDER
 unset SQLRAW_MIGRATION_FILE

@@ -10,7 +10,8 @@ import sqlparse
 from sqlraw.reserved_keywords import ADAPTERS
 
 DIRECTORY = os.path.split(os.path.abspath(__file__))[0]
-MIGRATION_FOLDER = os.getenv('SQLRAW_MIGRATION_FOLDER', os.path.join(DIRECTORY, 'migrations'))
+MIGRATION_FOLDER = os.getenv('SQLRAW_MIGRATION_FOLDER',
+                             os.path.join(DIRECTORY, 'migrations'))
 os.makedirs(MIGRATION_FOLDER, exist_ok=True)
 
 LOGGER = logging.getLogger('sqlraw')
@@ -22,7 +23,8 @@ fh.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - '
+                              '%(message)s')
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 
@@ -35,7 +37,9 @@ SQLITE_DB_FILE = None
 try:
     DB_URL = urlparse(os.getenv('SQLRAW_DB_URL'))
 except TypeError:
-    LOGGER.error(f"DB_URL is missing. See `mysql_init.sh or pgsql_init.sh` for pointers")
+    LOGGER.error(
+        f"DB_URL is missing. See `mysql_init.sh or pgsql_init.sh` "
+        f"for pointers")
     sys.exit(1)
 
 SCHEMA = os.getenv('SQLRAW_SCHEMA')
@@ -48,7 +52,9 @@ if DB_URL.scheme == 'mysql':
 
 if DB_URL.scheme == 'sqlite':
     if DB_URL.netloc:
-        LOGGER.error(f"{DB_URL.netloc} isn't supported. Use a real file path. See `sqlite_init.sh` for pointers")
+        LOGGER.error(
+            f"{DB_URL.netloc} isn't supported. Use a real file path. "
+            f"See `sqlite_init.sh` for pointers")
         sys.exit(1)
 
     SQLITE_DB_FILE = DB_URL.path
@@ -59,13 +65,16 @@ CHECKS_OFF = os.getenv('SQLRAW_CHECKS_OFF', 0)
 try:
     MIGRATION_FILE = os.getenv('SQLRAW_MIGRATION_FILE')
 except TypeError:
-    LOGGER.error(f"MIGRATION_FILE is missing. See `mysql_init.sh or pgsql_init.sh` for pointers")
+    LOGGER.error(f"MIGRATION_FILE is missing. "
+                 f"See `mysql_init.sh or pgsql_init.sh` for pointers")
     sys.exit(1)
 
 VALID_TABLE_FIELD = re.compile(r"^[a-zA-Z]\w*\Z")
-PYTHON_KEYWORDS = re.compile("^(False|True|and|as|assert|break|class|continue|def|del|elif|else"
-                             "|except|exec|finally|for|from|global|if|import|in|is|lambda|nonlocal"
-                             "|not|or|pass|print|raise|return|try|while|with|yield)$")
+PYTHON_KEYWORDS = re.compile("^(False|True|and|as|assert|break|class"
+                             "|continue|def|del|elif|else|except|exec"
+                             "|finally|for|from|global|if|import|in|is"
+                             "|lambda|nonlocal|not|or|pass|print|raise"
+                             "|return|try|while|with|yield)$")
 
 
 def migration_files():
@@ -101,44 +110,53 @@ def generate_migration_file():
 
 def display_sql(revision):
     """
-    Prints sql statements contained in a file by the revision number it appears in the OS
+    Prints sql statements contained in a file by the revision number it
+    appears in the OS
     :param revision: revision number
     :return: String
     """
     if f"{revision}.sql" in migration_files():
-        return open(os.path.join(MIGRATION_FOLDER, f"{revision}.sql"), 'r').read()
+        return open(os.path.join(MIGRATION_FOLDER, f"{revision}.sql"),
+                    'r').read()
     return ""
 
 
 def by_index(step):
     """
-    Prints sql statements contained in a file by the number it appears if listed in the OS
+    Prints sql statements contained in a file by the number it appears if
+    listed in the OS
     :param step: number of the listed file
     :return: String
     """
     try:
-        return open(os.path.join(MIGRATION_FOLDER, migration_files()[step - 1]), 'r').read()
+        return open(
+            os.path.join(MIGRATION_FOLDER, migration_files()[step - 1]),
+            'r').read()
     except IndexError:
         return ""
 
 
 def format_by_index(step):
     """
-    Formats sql statements contained in a file by the number it appears if listed in the OS
+    Formats sql statements contained in a file by the number it appears if
+    listed in the OS
     :param step: number of the listed file
     :return: String
     """
     try:
-        file_to_alter = os.path.join(MIGRATION_FOLDER, migration_files()[step - 1])
+        file_to_alter = os.path.join(MIGRATION_FOLDER,
+                                     migration_files()[step - 1])
 
         with open(file_to_alter, 'r') as file_text:
             query = file_text.read()
 
         with open(file_to_alter, 'w') as file_text:
-            formatted = sqlparse.format(query, reindent=True, keyword_case='upper')
+            formatted = sqlparse.format(query, reindent=True,
+                                        keyword_case='upper')
             file_text.write(formatted)
 
-        return '\n'.join(["==--OLD QUERY--==", query, "==--NEW QUERY--==", formatted])
+        return '\n'.join(
+            ["==--OLD QUERY--==", query, "==--NEW QUERY--==", formatted])
     except IndexError:
         return ""
 
@@ -149,7 +167,8 @@ def regex(pattern):
     :param pattern: a pattern you intend to search for
     :return: String
     """
-    cmd = "find " + MIGRATION_FOLDER + " -type f -exec grep -il " + pattern + " {} +"
+    cmd = "find " + MIGRATION_FOLDER + " -type f -exec grep -il " + \
+          pattern + " {} +"
     out = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     stdout, stderr = out.communicate()
 
@@ -167,10 +186,12 @@ def keyword(variable):
     """
     for backend in ADAPTERS:
         if variable.upper() in ADAPTERS[backend]:
-            msg = f'Variable "{variable}" is a "{backend.upper()}" reserved SQL/NOSQL keyword'
+            msg = f'Variable "{variable}" is a "{backend.upper()}" ' \
+                  f'reserved SQL/NOSQL keyword'
             raise SyntaxError(msg)
 
-    if not VALID_TABLE_FIELD.match(variable) or PYTHON_KEYWORDS.match(variable):
+    if not VALID_TABLE_FIELD.match(variable) or PYTHON_KEYWORDS.match(
+            variable):
         raise SyntaxError(f"Field: invalid field name: {variable}")
 
     return f"{variable} isn't a known keyword"

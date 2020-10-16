@@ -12,6 +12,7 @@ __pycache__/
 *$py.class
 venv
 .venv
+.env
 experiments/
 LICENSE.txt
 MANIFEST.in

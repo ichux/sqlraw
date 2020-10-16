@@ -50,6 +50,8 @@ MYSQL_MIGRATION_DOWN = """-- name: {0}
 DROP TABLE IF EXISTS {1};
 """
 
-REVISION_EXISTS = f"SELECT revision FROM {MIGRATION_TABLE} WHERE revision=%(revision)s;"
-IS_MIGRATION_TABLE = f"SELECT table_rows FROM information_schema.tables WHERE table_schema=%(schema)s " \
+REVISION_EXISTS = f"SELECT revision FROM {MIGRATION_TABLE} WHERE " \
+                  f"revision=%(revision)s;"
+IS_MIGRATION_TABLE = f"SELECT table_rows FROM information_schema.tables " \
+                     f"WHERE table_schema=%(schema)s " \
                      f"AND table_name='{MIGRATION_TABLE}';"

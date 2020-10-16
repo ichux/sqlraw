@@ -6,15 +6,18 @@ import time
 import anosql
 from mysql.connector.connection import MySQLConnection, errors
 
-from sqlraw import (SCHEMA, LOGGER, DB_URL, MIGRATION_TABLE, MIGRATION_FILE, MIGRATION_FOLDER, CHECKS_OFF,
-                    migration_files, generate_migration_file)
-from sqlraw.mysql_support import (MYSQL_MIGRATION_UP, MYSQL_MIGRATION_DOWN, MYSQL_UP, MYSQL_DOWN, IS_MIGRATION_TABLE,
+from sqlraw import (SCHEMA, LOGGER, DB_URL, MIGRATION_TABLE, MIGRATION_FILE,
+                    MIGRATION_FOLDER, CHECKS_OFF, migration_files,
+                    generate_migration_file)
+from sqlraw.mysql_support import (MYSQL_MIGRATION_UP, MYSQL_MIGRATION_DOWN,
+                                  MYSQL_UP, MYSQL_DOWN, IS_MIGRATION_TABLE,
                                   REVISION_EXISTS, TURN_CHECKS_OFF)
 
 
 def mysql(function):
     """
-    Decorates some methods to ensure that the connections are properly closed or rolled back in case of an error.
+    Decorates some methods to ensure that the connections are properly
+    closed or rolled back in case of an error.
     :param function: the method if decorates
     :return: method
     """
@@ -22,10 +25,14 @@ def mysql(function):
     def wrapper(*args, **kwargs):
         connection = None
         try:
+            host = DB_URL.hostname
+            user = DB_URL.username
+            port = DB_URL.port or 3306
+            password = DB_URL.password
+            database = DB_URL.path.strip('/')
 
-            connection = kwargs['conn'] = MySQLConnection(host=DB_URL.hostname, user=DB_URL.username,
-                                                          port=DB_URL.port or 3306, password=DB_URL.password,
-                                                          database=DB_URL.path.strip('/'))
+            connection = kwargs['conn'] = MySQLConnection(host, user, port,
+                                                          password, database)
             return function(*args, **kwargs)
         except (Exception, errors.Error) as error:
             if connection:
@@ -41,7 +48,8 @@ class MySQLScheme(object):
     @staticmethod
     def close(conn, cursor):
         """
-        Commit an open connection, close the cursor and then close the connection
+        Commit an open connection, close the cursor and then close the
+        connection
         :param conn: connection
         :param cursor: cursor
         :return: None
@@ -117,7 +125,8 @@ def db_initialise():
     :return: None
     """
     generate_migration_file()
-    if not MySQLScheme.fetch_one(IS_MIGRATION_TABLE, **{"args": {'schema': SCHEMA}}):
+    if not MySQLScheme.fetch_one(IS_MIGRATION_TABLE,
+                                 **{"args": {'schema': SCHEMA}}):
         with open(MIGRATION_FILE, 'r') as init_sql:
             data = init_sql.read()
 
@@ -126,11 +135,14 @@ def db_initialise():
                 sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
                 with open(sql_file, 'w') as save_sql:
-                    up = MYSQL_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
-                    down = MYSQL_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE)
+                    up = MYSQL_MIGRATION_UP.format(f"upgrade-{when}", when,
+                                                   MIGRATION_TABLE)
+                    down = MYSQL_MIGRATION_DOWN.format(f"downgrade-{when}",
+                                                       MIGRATION_TABLE)
 
                     save_sql.write("\n\n".join([up, down]))
-                    LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
+                    LOGGER.info(f"migration file: "
+                                f"{os.path.join('migrations', sql_file)}")
             else:
                 when = re.findall('[0-9]+', data)[0]
 
@@ -166,7 +178,8 @@ def db_upgrade():
     dbu_query = anosql.from_path(MIGRATION_FILE, 'psycopg2')
 
     for time_step in [_.strip('.sql') for _ in migration_files()]:
-        decide = MySQLScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': time_step}})
+        decide = MySQLScheme.fetch_one(REVISION_EXISTS,
+                                       **{"args": {'revision': time_step}})
         if not decide:
             MySQLScheme.commit(getattr(dbu_query, f"upgrade_{time_step}").sql)
             LOGGER.info(f"successful migration: {time_step}")
@@ -192,7 +205,8 @@ def db_downgrade(step):
         count = 0
         for _ in to_use:
             count += 1
-            if MySQLScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': _}}):
+            if MySQLScheme.fetch_one(REVISION_EXISTS,
+                                     **{"args": {'revision': _}}):
                 MySQLScheme.commit(getattr(dbd_query, f"downgrade_{_}").sql)
                 LOGGER.info(f"successful downgrade: {_}")
             if count == step:
@@ -212,7 +226,8 @@ def status():
 
     try:
         for step in to_use:
-            if MySQLScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': step}}):
+            if MySQLScheme.fetch_one(REVISION_EXISTS,
+                                     **{"args": {'revision': step}}):
                 response.append(f"migrations done  : {step}")
             else:
                 response.append(f"migrations undone: {step}")

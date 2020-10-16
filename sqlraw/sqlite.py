@@ -37,7 +37,8 @@ class SQLiteScheme(object):
     @staticmethod
     def close(conn, cursor):
         """
-        Commit an open connection, close the cursor and then close the connection
+        Commit an open connection, close the cursor and then close the
+        connection
         :param conn: connection
         :param cursor: cursor
         :return: None
@@ -126,11 +127,14 @@ def db_initialise():
                 sql_file = os.path.join(MIGRATION_FOLDER, f"{when}.sql")
 
                 with open(sql_file, 'w') as save_sql:
-                    up = SQLITE_MIGRATION_UP.format(f"upgrade-{when}", when, MIGRATION_TABLE)
-                    down = SQLITE_MIGRATION_DOWN.format(f"downgrade-{when}", MIGRATION_TABLE)
+                    up = SQLITE_MIGRATION_UP.format(f"upgrade-{when}", when,
+                                                    MIGRATION_TABLE)
+                    down = SQLITE_MIGRATION_DOWN.format(f"downgrade-{when}",
+                                                        MIGRATION_TABLE)
 
                     save_sql.write("\n\n".join([up, down]))
-                    LOGGER.info(f"migration file: {os.path.join('migrations', sql_file)}")
+                    LOGGER.info(f"migration file: "
+                                f"{os.path.join('migrations', sql_file)}")
             else:
                 when = re.findall('[0-9]+', data)[0]
 
@@ -166,7 +170,8 @@ def db_upgrade():
     dbu_query = anosql.from_path(MIGRATION_FILE, 'sqlite3')
 
     for time_step in [_.strip('.sql') for _ in migration_files()]:
-        decide = SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': time_step}})
+        decide = SQLiteScheme.fetch_one(REVISION_EXISTS,
+                                        **{"args": {'revision': time_step}})
 
         if not decide:
             try:
@@ -196,7 +201,8 @@ def db_downgrade(step):
         count = 0
         for _ in to_use:
             count += 1
-            if SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': _}}):
+            if SQLiteScheme.fetch_one(REVISION_EXISTS,
+                                      **{"args": {'revision': _}}):
                 SQLiteScheme.commit(getattr(dbd_query, f"downgrade_{_}").sql)
                 LOGGER.info(f"successful downgrade: {_}")
             if count == step:
@@ -216,7 +222,8 @@ def status():
 
     try:
         for step in to_use:
-            if SQLiteScheme.fetch_one(REVISION_EXISTS, **{"args": {'revision': step}}):
+            if SQLiteScheme.fetch_one(REVISION_EXISTS,
+                                      **{"args": {'revision': step}}):
                 response.append(f"migrations done  : {step}")
             else:
                 response.append(f"migrations undone: {step}")

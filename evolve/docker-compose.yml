@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  queries:
+    image: ichux/sqlraw:latest
+    container_name: isql
+    entrypoint:
+      - bash
+    tty: true
+    volumes:
+      - .:/source/results

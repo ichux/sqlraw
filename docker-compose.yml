@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  sqlraw:
+    build: .
+    tty: true
+    container_name: sqlraw
+    entrypoint:
+      - bash
+    volumes:
+      - ./extras:/source/results

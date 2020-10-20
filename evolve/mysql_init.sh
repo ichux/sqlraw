@@ -16,4 +16,4 @@ export SQLRAW_MIGRATION_TABLE=migration_data
 export SQLRAW_DB_URL=mysql://username:password@ipaddress:port/db
 export SQLRAW_CHECKS_OFF=1
 
-printenv | grep SQLRAW
+# printenv | grep SQLRAW

@@ -14,4 +14,4 @@ export SQLRAW_MIGRATION_FILE=$PWD/results/sqlite/migrate.sql
 export SQLRAW_MIGRATION_TABLE=migration_data
 export SQLRAW_DB_URL=sqlite://$PWD/results/sqlite/sqlraw.db
 
-printenv | grep SQLRAW
+# printenv | grep SQLRAW

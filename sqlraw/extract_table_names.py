@@ -11,14 +11,15 @@
 # SELECT statements.
 #
 # See:
-# https://groups.google.com/forum/#!forum/sqlparse/browse_thread/thread/b0bd9a022e9d4895
+# URL = https://groups.google.com/forum/#!forum/sqlparse/
+# URL += browse_thread/thread/b0bd9a022e9d4895
 
 import sqlparse
 from sqlparse.sql import IdentifierList, Identifier
 from sqlparse.tokens import Keyword, DML
 
 
-def is_subselect(parsed):
+def is_sub_select(parsed):
     if not parsed.is_group:
         return False
     for item in parsed.tokens:
@@ -31,7 +32,7 @@ def extract_from_part(parsed):
     from_seen = False
     for item in parsed.tokens:
         if from_seen:
-            if is_subselect(item):
+            if is_sub_select(item):
                 for x in extract_from_part(item):
                     yield x
             elif item.ttype is Keyword:
@@ -61,9 +62,9 @@ def extract_tables(sql):
 
 
 if __name__ == '__main__':
-    sql = """
-    select K.a,K.b from (select H.b from (select G.c from (select F.d from
-    (select E.e from A, B, C, D, E), F), G), H), I, J, K order by 1,2;
+    sql = """select K.a,K.b from (select H.b from (select G.c from 
+    (select F.d from (select E.e from A, B, C, D, E), F), G), H), 
+    I, J, K order by 1,2;
     """
 
     tables = ', '.join(extract_tables(sql))

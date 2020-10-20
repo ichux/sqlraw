@@ -1,7 +1,8 @@
 from sqlraw import DB_URL, MIGRATION_TABLE, SCHEMA
 
-DSN = f"user={DB_URL.username} password={DB_URL.password} dbname={DB_URL.path.strip('/')} " \
-      f"host={DB_URL.hostname} port={DB_URL.port or 5432}"
+DSN = f"user={DB_URL.username} password={DB_URL.password} " \
+      f"dbname={DB_URL.path.strip('/')} host={DB_URL.hostname} " \
+      f"port={DB_URL.port or 5432}"
 
 PGSQL_UP = """-- name: {0}
 /**

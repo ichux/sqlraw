@@ -15,4 +15,4 @@ export SQLRAW_MIGRATION_TABLE=migration_data
 export SQLRAW_DB_URL=postgres://username:password@ipaddress:port/db
 export SQLRAW_SCHEMA=public
 
-printenv | grep SQLRAW
+# printenv | grep SQLRAW

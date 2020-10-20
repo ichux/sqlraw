@@ -4,7 +4,7 @@ help:
 	@echo "  tag			tags the image"
 	@echo "  upload		uploads to docker hub"
 
-build: clean
+build:
 	@docker-compose --project-name query up --build -d
 	@make tag
 

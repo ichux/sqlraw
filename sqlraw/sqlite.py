@@ -6,15 +6,17 @@ import time
 
 import anosql
 
-from sqlraw import (LOGGER, SQLITE_DB_FILE, MIGRATION_TABLE, MIGRATION_FILE, MIGRATION_FOLDER, migration_files,
-                    generate_migration_file)
-from sqlraw.sqlite_support import (SQLITE_MIGRATION_UP, SQLITE_MIGRATION_DOWN, SQLITE_UP, SQLITE_DOWN,
-                                   IS_MIGRATION_TABLE, REVISION_EXISTS)
+from sqlraw import (LOGGER, SQLITE_DB_FILE, MIGRATION_TABLE, MIGRATION_FILE,
+                    MIGRATION_FOLDER, migration_files, generate_migration_file)
+from sqlraw.sqlite_support import (SQLITE_MIGRATION_UP, SQLITE_MIGRATION_DOWN,
+                                   SQLITE_UP, SQLITE_DOWN, IS_MIGRATION_TABLE,
+                                   REVISION_EXISTS)
 
 
 def sqlite(function):
     """
-    Decorates some methods to ensure that the connections are properly closed or rolled back in case of an error.
+    Decorates some methods to ensure that the connections are properly closed
+    or rolled back in case of an error.
     :param function: the method if decorates
     :return: method
     """
@@ -175,7 +177,8 @@ def db_upgrade():
 
         if not decide:
             try:
-                SQLiteScheme.commit(getattr(dbu_query, f"upgrade_{time_step}").sql)
+                SQLiteScheme.commit(
+                    getattr(dbu_query, f"upgrade_{time_step}").sql)
                 LOGGER.info(f"successful migration: {time_step}")
             except sqlite3.Error as error:
                 LOGGER.info(f"Error: {error}")
@@ -207,7 +210,7 @@ def db_downgrade(step):
                 LOGGER.info(f"successful downgrade: {_}")
             if count == step:
                 break
-    except errors.ProgrammingError:
+    except sqlite3.ProgrammingError:
         print("no more downgrade left")
 
 

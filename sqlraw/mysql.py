@@ -45,9 +45,16 @@ def mysql(function):
             password = DB_URL.password
             database = DB_URL.path.strip("/")
 
-            connection = kwargs["conn"] = MySQLConnection(
-                host, user, port, password, database
-            )
+            initiate = {
+                "host": host,
+                "user": user,
+                "port": port,
+                "password": password,
+                "database": database,
+            }
+
+            connection = kwargs["conn"] = MySQLConnection(**initiate)
+            
             return function(*args, **kwargs)
         except (Exception, errors.Error) as error:
             if connection:

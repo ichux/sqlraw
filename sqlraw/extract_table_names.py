@@ -15,15 +15,15 @@
 # URL += browse_thread/thread/b0bd9a022e9d4895
 
 import sqlparse
-from sqlparse.sql import IdentifierList, Identifier
-from sqlparse.tokens import Keyword, DML
+from sqlparse.sql import Identifier, IdentifierList
+from sqlparse.tokens import DML, Keyword
 
 
 def is_sub_select(parsed):
     if not parsed.is_group:
         return False
     for item in parsed.tokens:
-        if item.ttype is DML and item.value.upper() == 'SELECT':
+        if item.ttype is DML and item.value.upper() == "SELECT":
             return True
     return False
 
@@ -39,7 +39,7 @@ def extract_from_part(parsed):
                 return
             else:
                 yield item
-        elif item.ttype is Keyword and item.value.upper() == 'FROM':
+        elif item.ttype is Keyword and item.value.upper() == "FROM":
             from_seen = True
 
 
@@ -61,11 +61,11 @@ def extract_tables(sql):
     return list(extract_table_identifiers(stream))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sql = """select K.a,K.b from (select H.b from (select G.c from 
     (select F.d from (select E.e from A, B, C, D, E), F), G), H), 
     I, J, K order by 1,2;
     """
 
-    tables = ', '.join(extract_tables(sql))
-    print('Tables: {0}'.format(tables))
+    tables = ", ".join(extract_tables(sql))
+    print("Tables: {0}".format(tables))

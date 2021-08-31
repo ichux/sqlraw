@@ -54,7 +54,7 @@ def mysql(function):
             }
 
             connection = kwargs["conn"] = MySQLConnection(**initiate)
-            
+
             return function(*args, **kwargs)
         except (Exception, errors.Error) as error:
             if connection:

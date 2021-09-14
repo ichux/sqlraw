@@ -1,4 +1,4 @@
 anosql==1.0.2
 mysql-connector-python==8.0.26
 psycopg2-binary==2.9.1
-sqlparse==0.4.1
+sqlparse==0.4.2

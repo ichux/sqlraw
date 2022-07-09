@@ -3,7 +3,7 @@
 This project aims to help you run `DB migrations` using raw sql queries while building applications of any size
 and in any programming language. This is achieved by decoupling you from any framework or SQL abstractions
 that abound. This is plain and raw SQL, as defined by known SQL standards. `python manage.py -h` will show you
-the help manual. However, before then, you need to [set up the project](#how-to-run).
+the help manual. However, you need to [set up the project](#how-to-run).
 
 ## In doubt?
 See your `.log` file for information that are helpful. Some of these information are also posted to the terminal.

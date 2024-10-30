@@ -47,14 +47,10 @@ Under _How to run_ at the `Step 5` I mentioned you creating your own script from
 This utility gives you the ability to have many database migration for different projects, all with their own log files.
 So, for instance, assuming you want to or are working with a DB named `school_management`, try to create a script file
 named `school_management.sh` that contains the following (if you are using MySQL DB for instance):
-````
-unset SQLRAW_LOGFILE
-unset SQLRAW_MIGRATION_FOLDER
-unset SQLRAW_MIGRATION_FILE
-unset SQLRAW_MIGRATION_TABLE
-unset SQLRAW_DB_URL
-unset SQLRAW_SCHEMA
-unset SQLRAW_CHECKS_OFF
+```
+for var in $(compgen -v | grep '^SQLRAW_'); do
+  unset "$var"
+done
 
 export SQLRAW_LOGFILE=$HOME/dm/school-management-mysql/smm.log
 export SQLRAW_MIGRATION_FOLDER=$HOME/dm/school-management-mysql/queries
@@ -62,7 +58,7 @@ export SQLRAW_MIGRATION_FILE=$HOME/dm/school-management-mysql/migrate.sql
 export SQLRAW_MIGRATION_TABLE=migration_data
 export SQLRAW_DB_URL=mysql://username:password@ipaddress:port/school_management
 export SQLRAW_CHECKS_OFF=1
-````
+```
 Some of the sensible assumptions made is that this program will generate all necessary directories and log files
 as long as it has permission to the parent folder. It will also be better if you have a common directory, 
 like `$HOME/dm` where all your migrations folders live. In this case, you can properly version them with `git` et al.
